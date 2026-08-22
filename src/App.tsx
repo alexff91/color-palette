@@ -43,7 +43,7 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <header className="border-b border-gray-800 p-4">
-        <div className="mx-auto max-w-6xl flex items-center justify-between">
+        <div className="mx-auto max-w-6xl flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Color Palette Generator</h1>
           <div className="flex items-center gap-4">
             <select value={mode} onChange={e => setMode(e.target.value as HarmonyMode)} className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm">
@@ -62,12 +62,13 @@ function App() {
           return (
             <div key={i} className="flex-1 flex flex-col items-center justify-center p-6 cursor-pointer relative group"
               style={{ backgroundColor: color.hex, color: txtC, minHeight: '200px' }} onClick={() => cp(color.hex)}>
-              <button onClick={e => { e.stopPropagation(); lock(i); }} className="absolute top-4 right-4 text-2xl opacity-60 hover:opacity-100">
+              <button onClick={e => { e.stopPropagation(); lock(i); }} aria-label={color.locked ? 'Unlock this colour' : 'Lock this colour'}
+                className="absolute top-2 right-2 w-11 h-11 flex items-center justify-center text-2xl leading-none opacity-60 hover:opacity-100">
                 {color.locked ? '\ud83d\udd12' : '\ud83d\udd13'}
               </button>
               <span className="text-3xl font-bold font-mono mb-2">{color.hex}</span>
               {copied === color.hex && <span className="text-sm font-medium opacity-80">Copied!</span>}
-              <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity w-full max-w-[200px] space-y-2">
+              <div className="mt-4 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity w-full max-w-[200px] space-y-2">
                 <label className="text-xs block">H: {Math.round(hsl.h)}<input type="range" min="0" max="360" value={Math.round(hsl.h)} onClick={e => e.stopPropagation()} onChange={e => setColors(p => p.map((c, j) => j === i ? { ...c, hex: hslToHex({...hsl, h: Number(e.target.value)}) } : c))} className="w-full" /></label>
                 <label className="text-xs block">S: {Math.round(hsl.s*100)}%<input type="range" min="0" max="100" value={Math.round(hsl.s*100)} onClick={e => e.stopPropagation()} onChange={e => setColors(p => p.map((c, j) => j === i ? { ...c, hex: hslToHex({...hsl, s: Number(e.target.value)/100}) } : c))} className="w-full" /></label>
                 <label className="text-xs block">L: {Math.round(hsl.l*100)}%<input type="range" min="0" max="100" value={Math.round(hsl.l*100)} onClick={e => e.stopPropagation()} onChange={e => setColors(p => p.map((c, j) => j === i ? { ...c, hex: hslToHex({...hsl, l: Number(e.target.value)/100}) } : c))} className="w-full" /></label>
@@ -77,7 +78,7 @@ function App() {
       </div>
       <footer className="border-t border-gray-800 p-4">
         <div className="mx-auto max-w-6xl">
-          <div className="flex items-center gap-4 mb-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-3">
             <span className="text-sm text-gray-400">Export as:</span>
             <button onClick={() => setXm('css')} className={`px-3 py-1 rounded text-sm ${xm === "css" ? "bg-purple-600" : "bg-gray-800"}`}>CSS Variables</button>
             <button onClick={() => setXm('tailwind')} className={`px-3 py-1 rounded text-sm ${xm === "tailwind" ? "bg-purple-600" : "bg-gray-800"}`}>Tailwind Config</button>
