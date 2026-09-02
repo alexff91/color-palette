@@ -3,10 +3,305 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Color Palette Generator</title>
+    <title>Color Palette Generator — five colors, exported as CSS or Tailwind</title>
+    <meta
+      name="description"
+      content="Generate a five-color palette by harmony, lock the ones you like and reroll the rest, then copy the result as CSS custom properties or a Tailwind theme block."
+    />
+    <link rel="canonical" href="https://palette.alftech.space/" />
+    <meta name="robots" content="index, follow" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="alftech" />
+    <meta property="og:title" content="Color Palette Generator — five colors, exported as CSS or Tailwind" />
+    <meta
+      property="og:description"
+      content="Pick a harmony, lock the colors you like, reroll the rest. Copy the palette as CSS custom properties or a Tailwind theme block. Runs in the browser, no account."
+    />
+    <meta property="og:url" content="https://palette.alftech.space/" />
+    <meta property="og:image" content="https://palette.alftech.space/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Five color swatches with their hex codes, above the generated CSS variables" />
+    <meta property="og:locale" content="en_US" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Color Palette Generator — five colors, exported as CSS or Tailwind" />
+    <meta
+      name="twitter:description"
+      content="Pick a harmony, lock the colors you like, reroll the rest, and copy the palette as CSS variables or a Tailwind config."
+    />
+    <meta name="twitter:image" content="https://palette.alftech.space/og.png" />
+
+    <script>
+/* Маячок «инструментом воспользовались». Открытая страница — ещё не польза:
+   считается момент, когда человек забрал результат — скопировал его или
+   скачал файл. Один GET /_used за сессию, в обычный лог доступа; никаких
+   кук, никаких внешних сервисов, ничего о самом результате. */
+(function () {
+  var sent = false;
+  window.markToolUsed = function () {
+    if (sent) return;
+    sent = true;
+    try {
+      if (!(navigator.sendBeacon && navigator.sendBeacon('/_used'))) {
+        fetch('/_used', { keepalive: true });
+      }
+    } catch (error) { /* счётчик не важнее инструмента */ }
+  };
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      var write = navigator.clipboard.writeText.bind(navigator.clipboard);
+      navigator.clipboard.writeText = function (text) {
+        window.markToolUsed();
+        return write(text);
+      };
+    }
+  } catch (error) { /* нет клипборда — останутся скачивания */ }
+  document.addEventListener('click', function (event) {
+    var node = event.target;
+    while (node && node.tagName) {
+      if (node.tagName === 'A' && node.hasAttribute('download')) {
+        window.markToolUsed();
+        break;
+      }
+      node = node.parentNode;
+    }
+  }, true);
+})();
+</script>
+<script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Color Palette Generator",
+        "url": "https://palette.alftech.space/",
+        "description": "Generates a five-color palette from one hue by complementary, analogous or triadic harmony. Colors can be locked, rerolled and adjusted by hue, saturation and lightness, then exported as CSS custom properties or a Tailwind theme block.",
+        "applicationCategory": "DesignApplication",
+        "operatingSystem": "Any modern browser",
+        "browserRequirements": "Requires JavaScript",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+        "featureList": [
+          "Complementary, analogous, triadic and random harmonies",
+          "Lock a color and reroll the rest",
+          "Hue, saturation and lightness sliders per color",
+          "Copy a hex by clicking its swatch",
+          "Export as CSS custom properties or a Tailwind config"
+        ]
+      }
+    </script>
+
+    <style>
+      /* The generator itself is React and owns #root. These rules style the
+         description that sits under it. Plain CSS rather than Tailwind
+         classes: nothing here should depend on the build scanning a class
+         name out of an HTML file. */
+      body {
+        background: #030712;
+      }
+      .about {
+        max-width: 46rem;
+        margin: 0 auto;
+        padding: 2.5rem 1.25rem 3rem;
+        color: #d1d5db;
+        font: 1rem/1.65 ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+          Roboto, Helvetica, Arial, sans-serif;
+        border-top: 1px solid #1f2937;
+      }
+      .about h2 {
+        color: #fff;
+        font-size: 1.25rem;
+        line-height: 1.3;
+        font-weight: 700;
+        margin: 2rem 0 0.6rem;
+      }
+      .about h2:first-child {
+        margin-top: 0;
+      }
+      .about p {
+        margin: 0 0 0.9rem;
+      }
+      .about ul {
+        margin: 0 0 0.9rem;
+        padding-left: 1.15rem;
+        /* Tailwind's reset strips list markers from every ul on the page.
+           This list is prose and wants them back. */
+        list-style: disc;
+      }
+      .about li {
+        margin-bottom: 0.5rem;
+      }
+      .about b {
+        color: #fff;
+        font-weight: 600;
+      }
+      .about kbd {
+        background: #1f2937;
+        border-radius: 4px;
+        padding: 0.1rem 0.35rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.875rem;
+      }
+      /* Wide sample output scrolls inside its own box; the page must not. */
+      .about pre {
+        background: #111827;
+        border: 1px solid #1f2937;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        overflow-x: auto;
+        font-size: 0.8125rem;
+        line-height: 1.5;
+        margin: 0 0 0.9rem;
+      }
+      .about .home {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        color: #c084fc;
+      }
+      /* One quiet line to close the page: who made it, where the rest of them
+         live, and what could be wrong with this one. The finger-sized box goes
+         on the anchors rather than on the paragraph — the line holding a link
+         grows to 44px and the sentence around it keeps a readable line height,
+         instead of the whole thing being stretched to finger pitch. */
+      .about .colophon {
+        margin: 2rem 0 0;
+        padding-top: 1.1rem;
+        border-top: 1px solid #1f2937;
+        color: #9ca3af;
+        font-size: 0.875rem;
+        line-height: 1.65;
+      }
+      .about .colophon p {
+        margin: 0;
+      }
+      .about .colophon p + p {
+        margin-top: 0.5rem;
+      }
+      .about .colophon a {
+        display: inline-block;
+        min-height: 44px;
+        line-height: 44px;
+        color: #c084fc;
+      }
+      .about .colophon .donate[hidden] {
+        display: none;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+
+    <article class="about">
+      <h2>What this is</h2>
+      <p>
+        You need colors for a page and your eye has gone stale. This picks a hue
+        at random, builds five colors around it by the harmony you choose, and
+        hands them back as something you can paste into a stylesheet.
+      </p>
+      <p>
+        Lock the colors you want to keep, press <kbd>Space</kbd>, and only the
+        unlocked ones are replaced. Everything runs in your browser: there is no
+        account, nothing is uploaded, and nothing is kept between visits.
+      </p>
+
+      <h2>What it does</h2>
+      <ul>
+        <li>
+          <b>Four ways to build a palette.</b> Complementary, analogous, triadic
+          or plain random. Five swatches either way.
+        </li>
+        <li>
+          <b>Lock and reroll.</b> The padlock on a swatch pins that color;
+          <kbd>Space</kbd> or the Generate button replaces the rest.
+        </li>
+        <li>
+          <b>Copy a hex.</b> Click a swatch and its hex code goes to the
+          clipboard.
+        </li>
+        <li>
+          <b>Adjust by hand.</b> Hue, saturation and lightness sliders sit on
+          every swatch.
+        </li>
+        <li>
+          <b>Legible labels.</b> The hex on each swatch is written in white when
+          white clears a 4.5:1 contrast ratio against that color, and in black
+          when it does not.
+        </li>
+        <li>
+          <b>Two exports.</b> CSS custom properties or a Tailwind theme block,
+          copied with one button.
+        </li>
+      </ul>
+
+      <h2>What comes out</h2>
+      <p>
+        A palette built on hue 210 with the complementary harmony, exported as
+        CSS variables:
+      </p>
+      <pre>:root {
+  --color-1: #28598a;
+  --color-2: #2828bd;
+  --color-3: #e28c36;
+  --color-4: #d7d775;
+  --color-5: #591f93;
+}</pre>
+      <p>The same five colors as a Tailwind config:</p>
+      <pre>module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        palette: {
+      '1': '#28598a',
+      '2': '#2828bd',
+      '3': '#e28c36',
+      '4': '#d7d775',
+      '5': '#591f93',
+        },
+      },
+    },
+  },
+};</pre>
+
+      <p>
+        <a class="home" href="https://alftech.space/">More small tools →</a>
+      </p>
+
+      <!-- The address below is written with character references rather than
+           plain letters. A reader sees it in full and the mailto link opens
+           exactly as a hand-typed one would, but the regex an address harvester
+           runs over the raw page finds nothing to match. Which is also why this
+           comment does not spell the address out. -->
+      <div class="colophon">
+        <p>
+          Made by Aleksandr Fedorov at
+          <a href="https://alftech.space/">alftech.space</a>
+        </p>
+        <p>
+          The colors are mixed in this tab and nothing is uploaded, so a palette
+          that came out wrong leaves no trace for me to find. If an export does
+          not paste in cleanly, if a swatch and its hex code disagree, or if a
+          label is unreadable against the color it sits on, write to
+          <a href="mailto:a&#64;alftech&#46;space?subject=palette&#46;alftech&#46;space">a&#64;alftech&#46;space</a
+          ><span class="donate" hidden>
+            · <a rel="noopener">buy me a coffee</a></span
+          >
+        </p>
+      </div>
+    </article>
+
+    <script>
+      /* Donations are switched off: there is no account on any platform yet, so
+         there is no URL to send a reader to. Put that URL in DONATE_URL and the
+         line appears — that single edit is the whole switch. */
+      const DONATE_URL = '';
+      if (DONATE_URL) {
+        const slot = document.querySelector('.colophon .donate');
+        slot.querySelector('a').href = DONATE_URL;
+        slot.hidden = false;
+      }
+    </script>
   </body>
 </html>
